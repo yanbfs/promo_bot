@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #16161a;
+      --surface: #1e1e24;
+      --border:  #35353f;
+      --accent:  #f0c040;
+      --text:    #f2f2f7;
+      --label:   #a8a8bc;
+      --success: #3ddc84;
+      --error:   #ff4d6d;
+      --warn:    #ffb347;
+      --font:    'Syne', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      flex-shrink: 0;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 20px; font-weight: 800; }
+    .logo-text span { color: var(--accent); }
+    .badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--label);
+      letter-spacing: 1px;
+    }
+
+    /* ── Alerts ── */
+    .alerts { flex-shrink: 0; padding: 0 24px; }
+    .alert {
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      margin-top: 10px;
+      border-left: 3px solid;
+      animation: slideIn .2s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .alert-success { background: rgba(61,220,132,.1);  border-color: var(--success); color: var(--success); }
+    .alert-error   { background: rgba(255,77,109,.1);  border-color: var(--error);   color: var(--error); }
+    .alert-warning { background: rgba(255,179,71,.1);  border-color: var(--warn);    color: var(--warn); }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      padding: 20px 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 36px 24px;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 2fr 1fr;
+      gap: 16px;
+    }
+
+    .f-nome      { grid-column: 1;      grid-row: 1; }
+    .f-preco     { grid-column: 2;      grid-row: 1; }
+    .f-cupom     { grid-column: 3;      grid-row: 1; }
+    .f-link      { grid-column: 1 / 3;  grid-row: 2; }
+    .f-imagem    { grid-column: 3;      grid-row: 2; }
+    .f-descricao { grid-column: 1 / -1; grid-row: 3; }
+    .f-obs       { grid-column: 1 / -1; grid-row: 4; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-height: 0;
+    }
+
+    label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--label);
+      flex-shrink: 0;
+    }
+    label .req { color: var(--accent); margin-left: 2px; }
+
+    input, textarea {
+      flex: 1;
+      min-height: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      padding: 0 14px;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+      width: 100%;
+    }
+    textarea {
+      padding: 12px 14px;
+      resize: none;
+      line-height: 1.55;
+    }
+    input::placeholder, textarea::placeholder { color: #55556a; }
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(240,192,64,.12);
+    }
+
+    /* ── Rodapé ── */
+    .form-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    /* ── Checkboxes de destino ── */
+    .destinos-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 8px;
+    }
+
+    .destinos {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .destino-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .15s, background .15s;
+    }
+    .destino-item:has(input:checked) {
+      border-color: var(--success);
+      background: rgba(61,220,132,.07);
+    }
+    .destino-item input[type="checkbox"] {
+      /* reset dos estilos gerais de input */
+      flex: unset;
+      min-height: unset;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      margin: 0;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      cursor: pointer;
+      accent-color: var(--success);
+      transition: border-color .15s;
+    }
+    .destino-item:has(input:checked) input[type="checkbox"] {
+      border-color: var(--success);
+    }
+    .destino-nome {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--label);
+      transition: color .15s;
+    }
+    .destino-item:has(input:checked) .destino-nome {
+      color: var(--success);
+    }
+    .destino-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .15s;
+    }
+    .destino-item:has(input:checked) .destino-dot {
+      background: var(--success);
+    }
+
+    .btn {
+      font-family: var(--font);
+      font-size: 15px; font-weight: 700;
+      border: none; border-radius: 8px;
+      cursor: pointer;
+      padding: 13px 36px;
+      background: var(--accent);
+      color: #111114;
+      transition: transform .1s, opacity .15s;
+      white-space: nowrap;
+    }
+    .btn:hover  { opacity: .9; }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Overlay ── */
+    .sending-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(22,22,26,.9);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .sending-overlay.active { display: flex; }
+    .send-spinner {
+      width: 50px; height: 50px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .send-label { font-size: 17px; font-weight: 700; }
+    .send-sub   { font-size: 13px; color: var(--label); }
+
+    /* ── Responsividade ── */
+    @media (max-width: 750px) {
+      body { overflow: auto; height: auto; }
+      main { overflow: visible; padding: 16px; }
+      .card { padding: 20px; }
+
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+      .f-nome      { grid-column: 1 / -1; grid-row: auto; }
+      .f-preco     { grid-column: 1;      grid-row: auto; }
+      .f-cupom     { grid-column: 2;      grid-row: auto; }
+      .f-link      { grid-column: 1 / -1; grid-row: auto; }
+      .f-imagem    { grid-column: 1 / -1; grid-row: auto; }
+      .f-descricao { grid-column: 1 / -1; grid-row: auto; }
+      .f-obs       { grid-column: 1 / -1; grid-row: auto; }
+
+      input { height: 44px; }
+      textarea { height: 90px; }
+
+      .form-footer { flex-direction: column; align-items: stretch; }
+      .destinos { flex-direction: column; }
+      .btn { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🔥</div>
+  <div class="logo-text">Promo<span>Bot</span></div>
+  <div class="badge">v2.0</div>
+</header>
+
+<div class="alerts">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<main>
+  <div class="card">
+    <div class="card-title">📦 Dados da Oferta</div>
+    <form id="ofertaForm" method="POST" action="/"
+          autocomplete="off" autocorrect="off"
+          autocapitalize="off" spellcheck="false">
+
+      <input type="text"     name="fake_user" style="display:none">
+      <input type="password" name="fake_pass" style="display:none">
+
+      <div class="form-grid">
+
+        <div class="form-group f-nome">
+          <label>Nome do produto <span class="req">*</span></label>
+          <input type="text" name="nome"
+                 placeholder="Ex: Xiaomi Redmi Note 13 Pro 256GB"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                 required>
+        </div>
+
+        <div class="form-group f-preco">
+          <label>Preço <span class="req">*</span></label>
+          <input type="text" name="preco"
+                 placeholder="Ex: R$ 899,99"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                 required>
+        </div>
+
+        <div class="form-group f-cupom">
+          <label>Cupom</label>
+          <input type="text" name="cupom"
+                 placeholder="Ex: PROMO10"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+
+        <div class="form-group f-link">
+          <label>Link afiliado <span class="req">*</span></label>
+          <input type="url" name="link"
+                 placeholder="https://…"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                 required>
+        </div>
+
+        <div class="form-group f-imagem">
+          <label>URL da imagem <span class="req">*</span></label>
+          <input type="url" name="imagem"
+                 placeholder="https://…"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                 required>
+        </div>
+
+        <div class="form-group f-descricao">
+          <label>Descrição técnica <span class="req">*</span></label>
+          <textarea name="descricao"
+                    placeholder="Cole a descrição original do produto aqui…"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                    required></textarea>
+        </div>
+
+        <div class="form-group f-obs">
+          <label>Observação (opcional)</label>
+          <input type="text" name="observacao"
+                 placeholder="Ex: Frete grátis para Sul e Sudeste"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+
+      </div>
+
+      <div class="form-footer">
+
+        <!-- Checkboxes de destino -->
+        <div>
+          <div class="destinos-label">Onde enviar?</div>
+          <div class="destinos">
+
+            <label class="destino-item">
+              <input type="checkbox" name="destino_grupo" value="1" checked>
+              <div class="destino-dot"></div>
+              <span class="destino-nome">📱 Grupo</span>
+            </label>
+
+            <label class="destino-item">
+              <input type="checkbox" name="destino_canal" value="1" checked>
+              <div class="destino-dot"></div>
+              <span class="destino-nome">📢 Canal</span>
+            </label>
+
+            <label class="destino-item">
+              <input type="checkbox" name="destino_telegram" value="1" checked>
+              <div class="destino-dot"></div>
+              <span class="destino-nome">✈️ Telegram</span>
+            </label>
+
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="btnEnviar">🚀 Gerar e Enviar</button>
+
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="send-spinner"></div>
+  <div class="send-label">Enviando oferta…</div>
+  <div class="send-sub" id="sendStep">Gerando mensagem com IA…</div>
+</div>
+
+<script>
+  const checkboxes = document.querySelectorAll('.destino-item input[type="checkbox"]');
+  const btnEnviar  = document.getElementById('btnEnviar');
+
+  // Desabilita o botão se nenhum destino estiver marcado
+  function atualizarBotao() {
+    const algumMarcado = [...checkboxes].some(cb => cb.checked);
+    btnEnviar.disabled = !algumMarcado;
+    btnEnviar.title = algumMarcado ? '' : 'Selecione pelo menos um destino';
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener('change', atualizarBotao));
+  atualizarBotao();
+
+  // Overlay de envio com steps dinâmicos
+  const allSteps = [
+    "Gerando mensagem com IA…",
+    "Abrindo WhatsApp…",
+    "Enviando para o grupo…",
+    "Enviando para o canal…",
+    "Disparando no Telegram…"
+  ];
+
+  document.getElementById('ofertaForm').addEventListener('submit', function(e) {
+    if (btnEnviar.disabled) { e.preventDefault(); return; }
+
+    // Filtra steps conforme destinos marcados
+    const grupo    = document.querySelector('[name="destino_grupo"]').checked;
+    const canal    = document.querySelector('[name="destino_canal"]').checked;
+    const telegram = document.querySelector('[name="destino_telegram"]').checked;
+
+    let steps = ["Gerando mensagem com IA…"];
+    if (grupo)    steps.push("Enviando para o grupo…");
+    if (canal)    steps.push("Enviando para o canal…");
+    if (telegram) steps.push("Disparando no Telegram…");
+
+    document.getElementById('sendingOverlay').classList.add('active');
+    const stepEl = document.getElementById('sendStep');
+    let idx = 0;
+    const iv = setInterval(() => {
+      idx = (idx + 1) % steps.length;
+      stepEl.textContent = steps[idx];
+    }, 2500);
+    window.addEventListener('beforeunload', () => clearInterval(iv));
+  });
+</script>
+
+</body>
+</html>
