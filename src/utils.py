@@ -1,3 +1,4 @@
+import base64
 import requests
 from io import BytesIO
 from PIL import Image
@@ -69,4 +70,34 @@ def redimensionar_imagem(url: str):
         return buf
     except Exception as e:
         print(f"[utils] Erro ao baixar/redimensionar imagem: {e!r}")
+        return None
+
+
+def processar_imagem_altura_fixa_base64(url: str, altura_destino: int = 300) -> str | None:
+    """
+    Baixa a imagem e redimensiona PROPORCIONALMENTE para ter
+    altura_destino pixels de altura, sem cortar nada (a largura
+    varia conforme a proporção original da imagem).
+
+    Retorna como data URL base64 (PNG), pronta para uso direto em
+    <img src="..."> ou para ser copiada para o clipboard do navegador.
+
+    Retorna None se o download/processamento falhar.
+    """
+    try:
+        img = _baixar_imagem(url)
+
+        largura, altura = img.size
+        escala = altura_destino / altura
+        nova_largura = round(largura * escala)
+        img = img.resize((nova_largura, altura_destino), Image.LANCZOS)
+
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        buf.close()
+
+        return f"data:image/png;base64,{b64}"
+    except Exception as e:
+        print(f"[utils] Erro ao processar imagem com altura fixa: {e!r}")
         return None
